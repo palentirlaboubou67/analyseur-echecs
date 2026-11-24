@@ -1,0 +1,316 @@
+:root {
+  --fond: #f3f1ec;
+  --carte: #ffffff;
+  --texte: #23211d;
+  --doux: #6f6a61;
+  --bord: #e2ded5;
+  --accent: #5d8a3a;
+  --accent-texte: #ffffff;
+  --survol: #f0ede6;
+  --actif: #dbe8cf;
+  --victoire: #5d8a3a;
+  --defaite: #c0473b;
+  --nulle: #8a857b;
+  --erreur: #b23a2e;
+  --rayon: 10px;
+
+  /* Classification des coups : mêmes couleurs en clair et en sombre */
+  --c-brillant: #1f9e94;
+  --c-meilleur: #5f9e45;
+  --c-excellent: #84a94a;
+  --c-bon: #8f9a86;
+  --c-livre: #a3825e;
+  --c-imprecision: #dba63a;
+  --c-erreur: #e27f35;
+  --c-manquee: #cc5f50;
+  --c-gaffe: #cc3a2e;
+  /* Barre et graphique d'évaluation */
+  --eval-clair: #f2f0eb;
+  --eval-sombre: #3d3a36;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #1d1c1a;
+    --carte: #272623;
+    --texte: #ece9e2;
+    --doux: #a29d93;
+    --bord: #3a3834;
+    --accent: #7fae55;
+    --accent-texte: #12110f;
+    --survol: #302f2b;
+    --actif: #3c4a30;
+    --victoire: #7fae55;
+    --defaite: #e06b5e;
+    --nulle: #a29d93;
+    --erreur: #f08a7e;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; } /* sinon un display: grid l'emporte sur l'attribut hidden */
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+a { color: var(--accent); }
+
+.barre {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--bord);
+  background: var(--carte);
+}
+.logo { font-weight: 700; font-size: 1.1rem; color: var(--texte); text-decoration: none; }
+.barre { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.menu { display: flex; gap: 4px; }
+.menu a { color: var(--doux); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-weight: 600; }
+.menu a:hover { background: var(--survol); }
+.menu a.actif { color: var(--texte); background: var(--actif); }
+
+/* --- Entraînement ------------------------------------------------------------- */
+#reglages-entrainement { max-width: 560px; }
+.formulaire { display: flex; flex-direction: column; gap: 12px; }
+.formulaire label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: 0.9rem; }
+.formulaire select, .formulaire input { font-weight: 400; }
+.formulaire .doux { margin: -4px 0 0; }
+.statut { font-weight: 700; margin: 4px 0; }
+.theorie { margin: 4px 0 8px; padding: 6px 10px; border-radius: 8px; background: var(--actif); }
+.theorie.hors { background: var(--survol); }
+.messages { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; }
+#jeu-entrainement .navigation button { max-width: none; font-size: 0.9rem; padding: 8px 6px; }
+#jeu-entrainement .joueur .statut { font-size: 0.9rem; color: var(--doux); margin: 0; }
+.coach h3 { margin-bottom: 8px; }
+.coach-court { margin: 2px 0; font-size: 0.9rem; font-weight: 600; }
+.avis-coach .titre-coup { margin-bottom: 4px; }
+.avis-coach .explication { margin-top: 8px; }
+.meilleur-coup { font-weight: 700; }
+.precision-moyenne { font-weight: 700; font-size: 1.1rem; margin: 0 0 8px; }
+.pastilles { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.9rem; }
+.item-bilan { display: inline-flex; align-items: center; gap: 4px; }
+.bilan { margin-bottom: 10px; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+.carte {
+  background: var(--carte);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 16px;
+}
+.carte h2, .carte h3 { margin: 0 0 12px; }
+.carte h2 { font-size: 1.15rem; }
+.carte h3 { font-size: 1rem; }
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: var(--accent);
+  color: var(--accent-texte);
+  font-weight: 600;
+}
+button.secondaire { background: var(--survol); color: var(--texte); margin-top: 12px; width: 100%; }
+
+input, textarea, select {
+  font: inherit;
+  color: var(--texte);
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+textarea { width: 100%; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 13px; margin-bottom: 10px; }
+
+.etat { color: var(--doux); margin: 10px 0 0; min-height: 1.2em; }
+.etat.erreur, .avertissement { color: var(--erreur); }
+
+/* --- Accueil --------------------------------------------------------------- */
+
+.accueil { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+
+.ligne-form { display: flex; gap: 8px; }
+.ligne-form input { flex: 1; min-width: 0; }
+
+.filtres { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; color: var(--doux); font-size: 0.9rem; }
+.filtres label { display: flex; align-items: center; gap: 6px; }
+
+.liste-parties { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 4px; }
+
+.partie {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--texte);
+  text-decoration: none;
+  border-left: 4px solid var(--nulle);
+}
+.partie:hover { background: var(--survol); }
+.partie.victoire { border-left-color: var(--victoire); }
+.partie.defaite { border-left-color: var(--defaite); }
+
+.pion { width: 14px; height: 14px; border-radius: 50%; flex: none; border: 2px solid var(--doux); }
+.pion.blancs { background: #fff; }
+.pion.noirs { background: #222; }
+
+.centre { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.centre small { color: var(--doux); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.badge { font-size: 0.8rem; font-weight: 700; color: var(--nulle); }
+.victoire .badge { color: var(--victoire); }
+.defaite .badge { color: var(--defaite); }
+
+/* --- Vue partie ------------------------------------------------------------- */
+
+.retour { display: inline-block; margin-bottom: 12px; text-decoration: none; }
+
+.disposition { display: grid; grid-template-columns: minmax(0, 560px) minmax(260px, 1fr); gap: 16px; align-items: start; }
+
+.colonne-plateau { display: flex; flex-direction: column; gap: 6px; }
+.plateau-et-barre { display: flex; gap: 6px; }
+.plateau-conteneur { position: relative; flex: 1; min-width: 0; }
+.plateau { width: 100%; aspect-ratio: 1; }
+
+/* Barre d'évaluation : la partie du bas appartient au camp affiché en bas */
+.barre-eval { position: relative; width: 22px; flex: none; border-radius: 4px; overflow: hidden; background: var(--eval-sombre); }
+.barre-eval .part-bas { position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: var(--eval-clair); transition: height 0.25s; }
+.barre-eval.inverse { background: var(--eval-clair); }
+.barre-eval.inverse .part-bas { background: var(--eval-sombre); }
+.barre-eval .valeur { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; font-size: 10px; font-weight: 700; color: var(--eval-sombre); }
+.barre-eval .valeur.en-haut { top: 4px; bottom: auto; color: var(--eval-clair); }
+.barre-eval.inverse .valeur { color: var(--eval-clair); }
+.barre-eval.inverse .valeur.en-haut { color: var(--eval-sombre); }
+
+/* Classification : chaque .cat-* fournit sa couleur dans --c */
+.cat-brillant { --c: var(--c-brillant); }
+.cat-meilleur { --c: var(--c-meilleur); }
+.cat-excellent { --c: var(--c-excellent); }
+.cat-bon { --c: var(--c-bon); }
+.cat-livre { --c: var(--c-livre); }
+.cat-imprecision { --c: var(--c-imprecision); }
+.cat-erreur { --c: var(--c-erreur); }
+.cat-manquee { --c: var(--c-manquee); }
+.cat-gaffe { --c: var(--c-gaffe); }
+
+.badge-coup {
+  position: absolute;
+  z-index: 20;
+  transform: translate(-70%, -30%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  background: var(--c);
+  color: #fff;
+  font-size: 0.75em;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.etiquette { background: var(--c); color: #fff; font-size: 0.78rem; font-weight: 700; padding: 2px 9px; border-radius: 999px; }
+
+/* Graphique d'évaluation */
+.graphique { display: block; width: 100%; height: auto; margin-top: 8px; border-radius: 6px; cursor: pointer; }
+.graphique .fond { fill: var(--eval-sombre); }
+.graphique .aire { fill: var(--eval-clair); }
+.graphique .milieu { stroke: #8a857b; stroke-width: 1; stroke-dasharray: 4 4; }
+.graphique .curseur { stroke: var(--accent); stroke-width: 2; }
+.graphique .point { fill: var(--c); stroke: #fff; stroke-width: 1.5; }
+
+.joueur { display: flex; justify-content: space-between; align-items: center; font-weight: 600; padding: 2px 2px; }
+.pendule { font-variant-numeric: tabular-nums; background: var(--carte); border: 1px solid var(--bord); border-radius: 6px; padding: 1px 8px; }
+.pendule:empty { display: none; }
+
+.navigation { display: flex; gap: 6px; justify-content: center; margin-top: 4px; }
+.navigation button { flex: 1; max-width: 80px; background: var(--carte); color: var(--texte); border: 1px solid var(--bord); font-size: 1.05rem; }
+.navigation button:hover { background: var(--survol); }
+
+.colonne-infos { display: flex; flex-direction: column; gap: 16px; }
+
+#infos-partie dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 10px; }
+#infos-partie dt { color: var(--doux); }
+#infos-partie dd { margin: 0; }
+
+.liste-coups { max-height: 420px; overflow-y: auto; font-variant-numeric: tabular-nums; }
+.ligne-coup { display: grid; grid-template-columns: 3em 1fr 1fr; align-items: center; }
+.ligne-coup:nth-child(odd) { background: var(--survol); border-radius: 6px; }
+.num { color: var(--doux); padding-left: 6px; }
+.coup {
+  background: none;
+  color: var(--texte);
+  font-weight: 500;
+  text-align: left;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.coup:hover { background: var(--bord); }
+.coup.actif { background: var(--actif); font-weight: 700; }
+.coup.vide { color: var(--doux); }
+.coup .symbole { margin-left: 3px; font-weight: 800; }
+.coup[data-classe="brillant"] { color: var(--c-brillant); }
+.coup[data-classe="imprecision"] { color: var(--c-imprecision); }
+.coup[data-classe="erreur"] { color: var(--c-erreur); }
+.coup[data-classe="manquee"] { color: var(--c-manquee); }
+.coup[data-classe="gaffe"] { color: var(--c-gaffe); }
+
+/* Carte d'analyse */
+.entete-analyse { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.entete-analyse h3 { margin: 0; }
+.commandes-analyse { display: flex; gap: 6px; }
+.commandes-analyse select, .commandes-analyse button { padding: 6px 10px; }
+button:disabled { opacity: 0.55; cursor: default; }
+.option { display: flex; align-items: center; gap: 5px; font-size: 0.85rem; color: var(--doux); cursor: pointer; }
+
+.progression { position: relative; height: 24px; margin-top: 4px; border-radius: 6px; overflow: hidden; background: var(--survol); }
+.progression .barre { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: var(--actif); transition: width 0.4s; }
+.progression span { position: relative; padding-left: 10px; font-size: 0.85rem; line-height: 24px; }
+
+.precisions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 12px; }
+.precision { display: flex; flex-direction: column; align-items: center; padding: 10px 6px; border-radius: 8px; background: var(--survol); text-align: center; }
+.precision .nom { font-size: 0.85rem; color: var(--doux); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.precision strong { font-size: 1.7rem; line-height: 1.2; }
+.precision small { color: var(--doux); }
+
+.compteurs { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.compteurs td { padding: 3px 4px; }
+.compteurs .nombre { width: 3em; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Détail du coup courant */
+#carte-coup p { margin: 6px 0; }
+.explication { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--survol); border-radius: 0 8px 8px 0; }
+.explication p { margin: 4px 0; }
+.titre-coup { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.doux { color: var(--doux); font-size: 0.9rem; }
+#carte-coup h4 { margin: 12px 0 6px; font-size: 0.9rem; }
+.lignes-moteur { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 0.9rem; }
+.lignes-moteur li { display: flex; gap: 8px; align-items: baseline; }
+.eval-ligne { flex: none; min-width: 3.6em; padding: 1px 4px; border-radius: 4px; background: var(--survol); text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* --- Petits écrans (préparation du mobile) ---------------------------------- */
+
+@media (max-width: 820px) {
+  .accueil, .disposition { grid-template-columns: 1fr; }
+  .liste-coups { max-height: 260px; }
+}

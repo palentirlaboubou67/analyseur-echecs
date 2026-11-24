@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Analyseur d'échecs</title>
+  <meta name="description" content="Revois tes parties chess.com avec Stockfish et entraîne-toi aux ouvertures, avec des explications en français.">
+  <meta name="theme-color" content="#272623">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icones/icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icones/icone-192.png">
+  <!-- Échiquier : chessground (celui de Lichess), copié dans vendor/ pour marcher hors ligne -->
+  <link rel="stylesheet" href="vendor/chessground.base.css">
+  <link rel="stylesheet" href="vendor/chessground.brown.css">
+  <link rel="stylesheet" href="vendor/chessground.cburnett.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="barre">
+    <a href="#/" class="logo">♞ Analyseur d'échecs</a>
+    <nav class="menu">
+      <a href="#/" data-menu="parties">Mes parties</a>
+      <a href="#/entrainement" data-menu="entrainement">Entraînement</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Accueil : import des parties -->
+    <section id="vue-accueil" class="accueil">
+      <div class="carte">
+        <h2>Mes parties chess.com</h2>
+        <form id="form-pseudo" class="ligne-form">
+          <input id="pseudo" type="text" placeholder="Ton pseudo chess.com" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+          <button type="submit">Charger</button>
+        </form>
+        <div class="filtres">
+          <label>Cadence
+            <select id="filtre-cadence">
+              <option value="">Toutes</option>
+              <option value="bullet">Bullet</option>
+              <option value="blitz">Blitz</option>
+              <option value="rapid">Rapide</option>
+              <option value="daily">Quotidienne</option>
+            </select>
+          </label>
+          <label>Résultat
+            <select id="filtre-resultat">
+              <option value="">Tous</option>
+              <option value="victoire">Victoires</option>
+              <option value="defaite">Défaites</option>
+              <option value="nulle">Nulles</option>
+            </select>
+          </label>
+        </div>
+        <p id="etat-liste" class="etat"></p>
+        <ul id="liste-parties" class="liste-parties"></ul>
+        <button id="bouton-plus" class="secondaire" hidden>Afficher plus de parties</button>
+      </div>
+
+      <div class="carte">
+        <h2>Coller un PGN</h2>
+        <textarea id="texte-pgn" rows="8" spellcheck="false" placeholder="[Event &quot;...&quot;]&#10;1. e4 e5 2. Nf3 Nc6 ..."></textarea>
+        <button id="bouton-pgn">Afficher la partie</button>
+        <p id="etat-pgn" class="etat"></p>
+      </div>
+    </section>
+
+    <!-- Vue d'une partie -->
+    <section id="vue-partie" hidden>
+      <a href="#/" class="retour">← Mes parties</a>
+      <div class="disposition">
+        <div class="colonne-plateau">
+          <div class="joueur" id="joueur-haut"><span class="nom"></span><span class="pendule"></span></div>
+          <div class="plateau-et-barre">
+            <div id="barre-eval" class="barre-eval" title="Évaluation de Stockfish">
+              <div class="part-bas"></div>
+              <span class="valeur"></span>
+            </div>
+            <div class="plateau-conteneur">
+              <div id="plateau" class="plateau"></div>
+              <div id="badge-coup" class="badge-coup" hidden></div>
+            </div>
+          </div>
+          <div class="joueur" id="joueur-bas"><span class="nom"></span><span class="pendule"></span></div>
+          <div class="navigation">
+            <button data-nav="debut" title="Début (Origine)">⏮</button>
+            <button data-nav="precedent" title="Coup précédent (←)">◀</button>
+            <button data-nav="suivant" title="Coup suivant (→)">▶</button>
+            <button data-nav="fin" title="Fin (Fin)">⏭</button>
+            <button data-nav="retourner" title="Retourner l'échiquier (F)">⇅</button>
+          </div>
+          <svg id="graphique" class="graphique" hidden
+               aria-label="Graphique d'évaluation : cliquer pour aller à un coup"></svg>
+        </div>
+        <aside class="colonne-infos">
+          <div class="carte" id="infos-partie"></div>
+          <div class="carte" id="carte-analyse">
+            <div class="entete-analyse">
+              <h3>Analyse Stockfish</h3>
+              <div class="commandes-analyse">
+                <select id="reglage-analyse" title="Profondeur d'analyse">
+                  <option value="rapide">Rapide</option>
+                  <option value="normale" selected>Normale</option>
+                  <option value="profonde">Profonde</option>
+                </select>
+                <button id="bouton-analyser">Analyser</button>
+              </div>
+            </div>
+            <div id="progression-analyse" class="progression" hidden><div class="barre"></div><span></span></div>
+            <p id="etat-analyse" class="etat"></p>
+            <div id="resume-analyse"></div>
+          </div>
+          <div class="carte" id="carte-coup" hidden></div>
+          <div class="carte">
+            <div class="entete-analyse">
+              <h3>Coups</h3>
+              <label class="option"><input type="checkbox" id="option-suivant"> Montrer le meilleur coup à jouer</label>
+            </div>
+            <div id="liste-coups" class="liste-coups"></div>
+          </div>
+          <div class="carte" id="carte-compteurs" hidden>
+            <h3>Bilan des coups</h3>
+            <div id="compteurs"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Entraînement : affronter une ouverture, avec un coach après chaque coup -->
+    <section id="vue-entrainement" hidden>
+      <div class="carte" id="reglages-entrainement">
+        <h2>Affronter une ouverture</h2>
+        <p class="doux">Le bot joue <strong>forcément</strong> l'ouverture choisie. Après chacun de tes coups,
+          le coach te dit si c'est bien, quel était le meilleur coup, et pourquoi.</p>
+        <div class="formulaire">
+          <label>Ouverture du bot
+            <select id="choix-ouverture"></select>
+          </label>
+          <label>Ou cherche une autre ouverture
+            <input id="recherche-ouverture" list="liste-ouvertures" placeholder="Ex. : Fried Liver, Najdorf, Londres…" spellcheck="false">
+            <datalist id="liste-ouvertures"></datalist>
+          </label>
+          <p id="coups-ouverture" class="doux"></p>
+          <label>Le bot joue
+            <select id="couleur-bot">
+              <option value="w">les Blancs</option>
+              <option value="b">les Noirs</option>
+            </select>
+          </label>
+          <label>Niveau du bot (quand la théorie s'arrête)
+            <select id="niveau-bot"></select>
+          </label>
+          <button id="bouton-commencer">Commencer la partie</button>
+          <p id="etat-reglages" class="etat"></p>
+        </div>
+      </div>
+
+      <div id="jeu-entrainement" class="disposition" hidden>
+        <div class="colonne-plateau">
+          <div class="joueur"><span id="nom-haut" class="nom"></span></div>
+          <div class="plateau-conteneur">
+            <div id="plateau-entrainement" class="plateau"></div>
+          </div>
+          <div class="joueur"><span id="nom-bas" class="nom"></span><span id="statut-entrainement" class="statut"></span></div>
+          <p id="coach-court" class="coach-court" hidden></p>
+          <div class="navigation">
+            <button id="bouton-annuler" title="Reprendre ton dernier coup">↶ Annuler</button>
+            <button id="bouton-indice" title="Montrer le meilleur coup">💡 Indice</button>
+            <button id="bouton-retourner-jeu" title="Retourner l'échiquier">⇅</button>
+            <button id="bouton-nouvelle" title="Choisir une autre ouverture">Nouvelle</button>
+          </div>
+        </div>
+        <aside class="colonne-infos">
+          <div class="carte coach" id="carte-coach">
+            <h3 id="titre-entrainement"></h3>
+            <p id="theorie-entrainement" class="theorie"></p>
+            <div id="avis-coach" class="avis-coach"></div>
+          </div>
+          <div class="carte">
+            <h3>Ton bilan</h3>
+            <div id="bilan-entrainement" class="bilan"></div>
+            <button id="bouton-analyser-partie" class="secondaire" disabled>Analyser toute la partie</button>
+          </div>
+          <div class="carte">
+            <h3>Coups</h3>
+            <div id="coups-entrainement" class="liste-coups"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "Analyseur d'échecs",
+  "short_name": "Échecs",
+  "description": "Revois tes parties chess.com avec Stockfish et entraîne-toi aux ouvertures, avec un coach en français.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1d1c1a",
+  "theme_color": "#272623",
+  "icons": [
+    { "src": "icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icones/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icones/icone.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
