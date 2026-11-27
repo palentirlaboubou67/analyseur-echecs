@@ -497,6 +497,13 @@ cg-board square.move-dest:hover { background: rgba(30, 42, 69, 0.25); }
 .coup-ligne.mat { box-shadow: inset 0 0 0 1.5px #fff; }
 .carte-ligne .explication { background: rgba(255, 255, 255, 0.12); border-left-color: #fff; min-height: 4.5em; }
 .san-ligne { font-weight: 700; }
+.san-ligne.titre-coup { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.coup-ligne.moi { background: rgba(255, 255, 255, 0.26); font-style: italic; }
+.coup-ligne.moi.actif { background: #fff; }
+.coup-ligne .symbole { margin-left: 3px; font-weight: 800; font-style: normal; }
+.eval-direct { margin: -4px 0 10px; font-size: 0.85rem; font-variant-numeric: tabular-nums; opacity: 0.85; }
+.astuce { text-align: center; margin: 2px 0 0; font-size: 0.82rem; }
+.en-ligne .astuce { display: none; }
 .commandes-ligne { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
 .commandes-ligne button { width: 42px; height: 42px; padding: 0; background: rgba(255, 255, 255, 0.14); color: #fff; }
 .commandes-ligne button.lecture { width: auto; padding: 0 18px; background: #fff; color: #1e2a45; }

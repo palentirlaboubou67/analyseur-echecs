@@ -12,6 +12,9 @@ const etat = { id: null, partie: null, resume: null, ply: 0, orientation: "white
 const abonnes = { partie: [], position: [] };
 export const surNouvellePartie = (fn) => abonnes.partie.push(fn);
 export const surChangementPosition = (fn) => abonnes.position.push(fn);
+// Coup joué à la main sur l'échiquier : fn(fenAvant, uci). Géré par vue-ligne.js (variante libre).
+let surCoup = null;
+export const surCoupJoue = (fn) => { surCoup = fn; };
 
 export function idAffiche() {
   return etat.id;
@@ -36,7 +39,14 @@ export function afficherPartie(donnees, pseudo) {
   etat.orientation = orientationParDefaut(donnees, pseudo);
 
   if (!cg) {
-    cg = Chessground($("#plateau"), { viewOnly: true, coordinates: true, animation: { duration: 180 } });
+    cg = Chessground($("#plateau"), {
+      coordinates: true,
+      animation: { duration: 180 },
+      // On peut jouer les deux camps : chaque coup ouvre (ou prolonge) une variante.
+      movable: { free: false, showDests: true, events: { after: coupALaMain } },
+      premovable: { enabled: false },
+      draggable: { showGhost: true },
+    });
     window.addEventListener("resize", () => cg.redrawAll());
   }
   cg.set({ orientation: etat.orientation });
@@ -66,9 +76,10 @@ export function aller(ply) {
   etat.ply = Math.max(0, Math.min(coups.length, ply));
   const coup = coups[etat.ply - 1];
   const fen = coup ? coup.fen : fen_depart;
+  etat.fenAffichee = fen;
   cg.set({
     fen,
-    turnColor: fen.split(" ")[1] === "w" ? "white" : "black",
+    ...jouable(fen),
     lastMove: coup ? [coup.uci.slice(0, 2), coup.uci.slice(2, 4)] : undefined,
     check: coup ? /[+#]$/.test(coup.san) : false,
   });
@@ -83,13 +94,35 @@ export function aller(ply) {
 
 /** Affiche une position hors de la partie (ligne de Stockfish), sans changer le coup courant. */
 export function montrerPosition(fen, uci = null, formes = []) {
+  etat.fenAffichee = fen;
   cg.set({
     fen,
-    turnColor: fen.split(" ")[1] === "w" ? "white" : "black",
+    ...jouable(fen),
     lastMove: uci ? [uci.slice(0, 2), uci.slice(2, 4)] : undefined,
     check: new Chess(fen).inCheck(),
   });
   cg.setAutoShapes(formes);
+}
+
+/** Réglages chessground pour que le camp au trait puisse jouer dans `fen`. */
+function jouable(fen) {
+  const partie = new Chess(fen);
+  const dests = new Map();
+  for (const m of partie.moves({ verbose: true })) {
+    if (!dests.has(m.from)) dests.set(m.from, []);
+    if (!dests.get(m.from).includes(m.to)) dests.get(m.from).push(m.to);
+  }
+  const couleur = partie.turn() === "w" ? "white" : "black";
+  return { turnColor: couleur, movable: { color: couleur, dests } };
+}
+
+function coupALaMain(orig, dest) {
+  const fen = etat.fenAffichee;
+  const partie = new Chess(fen);
+  const piece = partie.get(orig);
+  // Promotion : toujours en dame (comme dans l'entraînement).
+  const promotion = piece?.type === "p" && (dest[1] === "8" || dest[1] === "1") ? "q" : "";
+  surCoup?.(fen, orig + dest + promotion);
 }
 
 // Pendant qu'on regarde une ligne, les boutons ◀ ▶ (et les flèches du clavier) la parcourent.

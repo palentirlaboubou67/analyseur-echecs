@@ -13,6 +13,7 @@ import { baseOuvertures, traduire } from "../js/ouvertures/base.js";
 import { Entrainement, choisirLigne } from "../js/ouvertures/bot.js";
 import { marquerLivre } from "../js/review/livre.js";
 import { commenterLigne } from "../js/explication/ligne.js";
+import { jugerCoup } from "../js/review/juger.js";
 
 const tests = [];
 const test = (nom, fn) => tests.push({ nom, fn });
@@ -337,6 +338,18 @@ test("voir la ligne : mat expliqué coup par coup", () => {
   vrai(l2.intro.includes("gros avantage des Noirs"), l2.intro);
   const l3 = commenterLigne("4k3/8/8/8/8/8/8/R3K1r1 w - - 0 1", { uci: ["a1a8"], eval: cp(0) });
   egal(l3.coups.length, 0, "coup illégal en échec");
+});
+
+test("coach d'un coup joué à la main (variante libre)", () => {
+  const avant = [{ eval: cp(30), uci: ["e2e4", "e7e5"], san: ["e4", "e5"] }];
+  const meilleur = jugerCoup(FEN_DEPART, "e2e4", avant, [{ eval: cp(30), uci: ["e7e5"], san: ["e5"] }]);
+  egal(meilleur.classification, "meilleur");
+  egal(meilleur.meilleur, null);
+  const erreur = jugerCoup(FEN_DEPART, "g2g4", avant, [{ eval: cp(-120), uci: ["d7d5"], san: ["d5"] }]);
+  egal(erreur.classification, "erreur");
+  egal(erreur.meilleur, { uci: "e2e4", san: "e4" });
+  vrai(erreur.phrases.length > 0 && erreur.perte > 10, JSON.stringify(erreur));
+  egal(jugerCoup(FEN_DEPART, "e2e5", avant, []), null, "coup illégal");
 });
 
 // --- Lancement --------------------------------------------------------------------------------

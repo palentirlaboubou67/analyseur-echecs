@@ -17,6 +17,9 @@ Site web (PC et téléphone) pour progresser aux échecs, en français, pour un 
   **Voir la ligne** (comme sur chess.com) : « Voir le mat en N », « Voir ce qu'il fallait jouer »,
   « Voir la suite » ou ▶ devant une ligne de Stockfish rejouent la ligne sur l'échiquier, coup par
   coup (◀ ▶, flèches du clavier, lecture automatique), avec une explication de chaque coup.
+  **Jouer ses propres coups** : on déplace une pièce depuis n'importe quel coup de la partie (ou au
+  milieu d'une ligne) ; ça crée « Ma variante » sans toucher à la partie. Stockfish évalue chaque
+  position en direct et le coach juge chacun de tes coups (bien / pas bien, meilleur coup, pourquoi).
 
 Tout tourne **dans le navigateur** : Stockfish 19 (WebAssembly), la base d'ouvertures et les
 explications. Rien n'est envoyé ailleurs (seul l'import chess.com contacte api.chess.com).

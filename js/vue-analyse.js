@@ -4,7 +4,7 @@
 import * as api from "./api.js";
 import { aller, definirFleches, etatPlateau, surChangementPosition, surNouvellePartie } from "./plateau.js";
 import { CATEGORIES } from "./review/classification.js";
-import { ouvrirLigne } from "./vue-ligne.js";
+import { memoriserLignes, ouvrirLigne } from "./vue-ligne.js";
 
 const $ = (sel) => document.querySelector(sel);
 const CLE_REGLAGE = "analyseur.reglage";
@@ -109,6 +109,10 @@ function afficherAnalyse(donnees) {
   analyse = donnees;
   const { profondeur } = donnees.reglage;
   $("#etat-analyse").textContent = `${donnees.moteur} · profondeur ${profondeur} max.`;
+  // Les lignes déjà calculées servent aussi aux variantes jouées à la main.
+  const { partie } = etatPlateau();
+  const fens = [partie.fen_depart, ...partie.coups.map((c) => c.fen)];
+  donnees.positions.forEach((position, i) => memoriserLignes(fens[i], position.lignes));
   afficherResume();
   annoterListe();
   dessinerGraphique();
@@ -206,6 +210,7 @@ $("#reglage-analyse").value = lire(CLE_REGLAGE, "normale");
 $("#bouton-analyser").addEventListener("click", lancer);
 
 function majPosition(etat) {
+  if (document.body.classList.contains("en-ligne")) return; // une variante est affichée
   const barre = $("#barre-eval");
   barre.classList.toggle("inverse", etat.orientation === "black");
   if (!analyse) {
@@ -238,7 +243,7 @@ function fleche(uci, brush) {
   return { orig: uci.slice(0, 2), dest: uci.slice(2, 4), brush };
 }
 
-function majBarre(position, orientation) {
+export function majBarre(position, orientation) {
   const barre = $("#barre-eval");
   const gainBas = orientation === "white" ? position.gain_blancs : 100 - position.gain_blancs;
   barre.querySelector(".part-bas").style.height = `${gainBas}%`;
