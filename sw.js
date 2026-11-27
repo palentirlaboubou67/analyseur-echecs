@@ -2,7 +2,7 @@
 // hors ligne. Stratégie « réseau d'abord » : la version la plus récente est servie quand elle est
 // disponible, sinon la copie en cache. Les appels à chess.com (autre origine) ne passent pas ici.
 
-const CACHE = "analyseur-echecs-v2";
+const CACHE = "analyseur-echecs-v3";
 const SHELL = [
   "./",
   "./index.html",
@@ -28,7 +28,9 @@ const SHELL = [
   "./js/plateau.js",
   "./js/stockage.js",
   "./js/vue-analyse.js",
+  "./js/vue-ligne.js",
   "./js/explication/faits.js",
+  "./js/explication/ligne.js",
   "./js/explication/redaction.js",
   "./js/importation/chesscom.js",
   "./js/importation/pgn.js",

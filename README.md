@@ -14,6 +14,9 @@ Site web (PC et téléphone) pour progresser aux échecs, en français, pour un 
   Analyse Stockfish coup par coup : barre d'évaluation, graphique, classification (brillant,
   meilleur, excellent, bon, livre, imprécision, erreur, occasion manquée, gaffe), précision de
   chaque joueur et explication en langage clair de chaque coup. On peut aussi coller un PGN.
+  **Voir la ligne** (comme sur chess.com) : « Voir le mat en N », « Voir ce qu'il fallait jouer »,
+  « Voir la suite » ou ▶ devant une ligne de Stockfish rejouent la ligne sur l'échiquier, coup par
+  coup (◀ ▶, flèches du clavier, lecture automatique), avec une explication de chaque coup.
 
 Tout tourne **dans le navigateur** : Stockfish 19 (WebAssembly), la base d'ouvertures et les
 explications. Rien n'est envoyé ailleurs (seul l'import chess.com contacte api.chess.com).

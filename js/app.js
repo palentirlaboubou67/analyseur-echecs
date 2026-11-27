@@ -153,7 +153,7 @@ document.querySelectorAll("[data-nav]").forEach((bouton) =>
 document.addEventListener("keydown", (e) => {
   const dansUnChamp = e.target instanceof Element && e.target.closest("input, textarea, select");
   if ($("#vue-partie").hidden || dansUnChamp) return;
-  const actions = { ArrowLeft: "precedent", ArrowRight: "suivant", Home: "debut", End: "fin", f: "retourner" };
+  const actions = { ArrowLeft: "precedent", ArrowRight: "suivant", Home: "debut", End: "fin", f: "retourner", Escape: "quitter" };
   if (actions[e.key]) {
     e.preventDefault();
     naviguer(actions[e.key]);

@@ -1,6 +1,7 @@
 // Vue d'une partie : échiquier, liste des coups, navigation, pendules.
 
 import { Chessground } from "../vendor/chessground.js";
+import { Chess } from "./echecs.js";
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -56,6 +57,11 @@ function orientationParDefaut({ resume, partie }, pseudo) {
 
 export function aller(ply) {
   if (!etat.partie || !Number.isFinite(ply)) return;
+  if (interception) { // on quittait une ligne de Stockfish : elle se referme
+    const fn = interception;
+    interception = null;
+    fn("ferme");
+  }
   const { coups, fen_depart } = etat.partie;
   etat.ply = Math.max(0, Math.min(coups.length, ply));
   const coup = coups[etat.ply - 1];
@@ -75,8 +81,26 @@ export function aller(ply) {
   abonnes.position.forEach((fn) => fn(etat));
 }
 
+/** Affiche une position hors de la partie (ligne de Stockfish), sans changer le coup courant. */
+export function montrerPosition(fen, uci = null, formes = []) {
+  cg.set({
+    fen,
+    turnColor: fen.split(" ")[1] === "w" ? "white" : "black",
+    lastMove: uci ? [uci.slice(0, 2), uci.slice(2, 4)] : undefined,
+    check: new Chess(fen).inCheck(),
+  });
+  cg.setAutoShapes(formes);
+}
+
+// Pendant qu'on regarde une ligne, les boutons ◀ ▶ (et les flèches du clavier) la parcourent.
+let interception = null;
+export function intercepterNavigation(fn) {
+  interception = fn;
+}
+
 export function naviguer(action) {
   if (!etat.partie) return;
+  if (interception && action !== "retourner" && interception(action)) return;
   const n = etat.partie.coups.length;
   if (action === "debut") aller(0);
   else if (action === "precedent") aller(etat.ply - 1);
@@ -86,6 +110,7 @@ export function naviguer(action) {
     etat.orientation = etat.orientation === "white" ? "black" : "white";
     cg.set({ orientation: etat.orientation });
     majJoueurs();
+    if (interception?.("retourner")) return;
     abonnes.position.forEach((fn) => fn(etat));
   }
 }

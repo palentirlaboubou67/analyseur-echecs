@@ -12,6 +12,7 @@ import { libelleCadence, nomOuvertureChessCom, resumePartie, validerPseudo } fro
 import { baseOuvertures, traduire } from "../js/ouvertures/base.js";
 import { Entrainement, choisirLigne } from "../js/ouvertures/bot.js";
 import { marquerLivre } from "../js/review/livre.js";
+import { commenterLigne } from "../js/explication/ligne.js";
 
 const tests = [];
 const test = (nom, fn) => tests.push({ nom, fn });
@@ -316,6 +317,26 @@ test("choix pondéré du bot hors théorie", () => {
   egal(choisirLigne(lignes, "b", 1).uci, ["c"]);
   const avecMat = [...lignes, { eval: mat(2), uci: ["m"] }];
   vrai(Array.from({ length: 50 }, () => choisirLigne(avecMat, "w", 300, hasard).uci[0]).every((u) => u === "m"));
+});
+
+test("voir la ligne : mat expliqué coup par coup", () => {
+  // Coup du berger : 1. e4 e5 2. Qh5 Nc6 3. Bc4 Nf6?? puis Qxf7#
+  const fen = apres(FEN_DEPART, "e2e4", "e7e5", "d1h5", "b8c6", "f1c4", "g8f6");
+  const mat1 = commenterLigne(fen, { uci: ["h5f7"], eval: mat(1) });
+  egal(mat1.intro, "Les Blancs matent en un coup.");
+  egal(mat1.coups[0].san, "Qxf7#");
+  egal(mat1.coups[0].phrases[0], "Échec et mat ! La dame prend le pion en f7.");
+  vrai(mat1.coups[0].phrases[1].startsWith("Le roi noir est attaqué"));
+
+  // Échec avec une seule parade, prise gratuite, coup illégal qui coupe la ligne
+  const fen2 = "4k3/8/8/8/3q4/8/8/R3K3 w - - 0 1";
+  const l2 = commenterLigne(fen2, { uci: ["a1a8", "e8e7", "h1h2"], eval: cp(-300) });
+  egal(l2.coups.length, 2, "coupé au coup illégal");
+  egal(l2.coups[0].numero, 1);
+  vrai(l2.coups[0].phrases[0].startsWith("La tour va en a8. Échec !"), l2.coups[0].phrases[0]);
+  vrai(l2.intro.includes("gros avantage des Noirs"), l2.intro);
+  const l3 = commenterLigne("4k3/8/8/8/8/8/8/R3K1r1 w - - 0 1", { uci: ["a1a8"], eval: cp(0) });
+  egal(l3.coups.length, 0, "coup illégal en échec");
 });
 
 // --- Lancement --------------------------------------------------------------------------------

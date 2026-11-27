@@ -6,7 +6,7 @@
 import { sansDepuis } from "../echecs.js";
 
 const URL_MOTEUR = new URL("../../moteur/stockfish-19-lite-single.js", import.meta.url);
-const LONGUEUR_LIGNE = 10; // demi-coups gardés par ligne
+const LONGUEUR_LIGNE = 16; // demi-coups gardés par ligne (un mat en 8 se voit en entier)
 
 export class ErreurMoteur extends Error {}
 

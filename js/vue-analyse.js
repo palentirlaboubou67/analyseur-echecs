@@ -4,6 +4,7 @@
 import * as api from "./api.js";
 import { aller, definirFleches, etatPlateau, surChangementPosition, surNouvellePartie } from "./plateau.js";
 import { CATEGORIES } from "./review/classification.js";
+import { ouvrirLigne } from "./vue-ligne.js";
 
 const $ = (sel) => document.querySelector(sel);
 const CLE_REGLAGE = "analyseur.reglage";
@@ -295,16 +296,55 @@ function afficherDetailCoup({ ply, partie }, coupJoue, infoCoup) {
   // Lignes du moteur dans la position d'où partait le coup (ou la position de départ).
   const positionAvant = analyse.positions[Math.max(0, ply - 1)];
   const fenAvant = ply > 1 ? partie.coups[ply - 2].fen : partie.fen_depart;
+  const fenApres = coupJoue ? coupJoue.fen : partie.fen_depart;
+
+  // Boutons « Voir la ligne » (comme sur chess.com) : rejouer la ligne sur l'échiquier.
+  const actions = el("div", "actions-ligne");
+  const meilleure = positionAvant.lignes[0];
+  if (coupJoue && meilleure && infoCoup.meilleur && infoCoup.meilleur.uci !== coupJoue.uci) {
+    const mat = matDe(meilleure.eval);
+    actions.append(boutonLigne(
+      mat ? `♚ Voir le mat en ${mat.n} manqué` : "▶ Voir ce qu'il fallait jouer",
+      mat ? "Le mat qu'il fallait jouer" : `Ce qu'il fallait jouer à la place de ${coupJoue.san}`,
+      fenAvant, meilleure, Boolean(mat),
+    ));
+  }
+  const suite = analyse.positions[ply]?.lignes?.[0];
+  if (suite) {
+    const mat = matDe(suite.eval);
+    const titre = coupJoue ? `La suite après ${coupJoue.san}` : "La suite";
+    actions.append(boutonLigne(
+      mat ? `♚ Voir le mat en ${mat.n} ${mat.camp}` : "▶ Voir la suite",
+      mat ? `Mat en ${mat.n} ${mat.camp}` : titre, fenApres, suite, Boolean(mat),
+    ));
+  }
+  if (actions.children.length) carte.append(actions);
+
   if (positionAvant.lignes.length) {
     carte.append(el("h4", "", coupJoue ? "Ce que proposait Stockfish" : "Lignes de Stockfish"));
     const liste = el("ol", "lignes-moteur");
     for (const ligne of positionAvant.lignes) {
       const li = document.createElement("li");
-      li.append(el("span", "eval-ligne", texteEval(ligne.eval)), el("span", "", numeroter(fenAvant, ligne.san)));
+      const voir = el("button", "voir-ligne", "▶");
+      voir.title = "Rejouer cette ligne sur l'échiquier";
+      voir.addEventListener("click", () => ouvrirLigne("Ligne de Stockfish", fenAvant, ligne));
+      li.append(voir, el("span", "eval-ligne", texteEval(ligne.eval)), el("span", "", numeroter(fenAvant, ligne.san)));
       liste.append(li);
     }
     carte.append(liste);
   }
+}
+
+/** Mat annoncé par une évaluation : {n, camp: "des Blancs"|"des Noirs"} ou null. */
+function matDe(ev) {
+  if (ev?.type !== "mat" || !ev.valeur) return null;
+  return { n: Math.abs(ev.valeur), camp: ev.valeur > 0 ? "des Blancs" : "des Noirs" };
+}
+
+function boutonLigne(texte, titre, fen, ligne, estMat) {
+  const b = el("button", `bouton-ligne${estMat ? " mat" : ""}`, texte);
+  b.addEventListener("click", () => ouvrirLigne(titre, fen, ligne));
+  return b;
 }
 
 function phraseCoup(info) {
