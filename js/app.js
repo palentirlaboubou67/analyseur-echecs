@@ -119,6 +119,7 @@ async function router() {
     lien.classList.toggle("actif", (lien.dataset.menu === "entrainement") === surEntrainement);
   });
   if (surEntrainement) return afficherEntrainement();
+  if (location.hash === "#mes-parties") $("#mes-parties").scrollIntoView({ behavior: "smooth" });
   if (!surPartie) return;
 
   const id = decodeURIComponent(correspondance[1]);

@@ -24,8 +24,15 @@ Les parties et analyses sont gardées sur l'appareil (IndexedDB).
 - Ouvrir le site, puis sur téléphone : menu du navigateur → **« Ajouter à l'écran d'accueil »**
   (ou « Installer l'application » sur PC). Il s'ouvre alors comme une appli, même hors ligne
   (sauf l'import chess.com, qui a besoin d'internet).
-- Pour le faire tourner sur son PC sans internet : `python outils/serveur_local.py` puis
-  http://localhost:5330/ (Python 3 suffit, rien à installer).
+- **Version PC hors ligne (Windows)** : `AnalyseurEchecs.exe` s'ouvre dans sa propre fenêtre et
+  fonctionne sans internet (sauf l'import chess.com). Pour le construire et l'installer
+  (raccourcis Bureau + menu Démarrer, sans droits administrateur) :
+  `powershell -ExecutionPolicy Bypass -File outils\construire_exe.ps1 -Installer`
+  (Python 3 requis ; PyInstaller est installé dans `.venv-exe` la première fois).
+  Le .exe sert le site sur http://127.0.0.1:5331/ et l'ouvre dans Microsoft Edge en mode
+  application, avec un profil à part (`%LOCALAPPDATA%\AnalyseurEchecs`) où restent les parties.
+  Ses données sont séparées de celles du site en ligne.
+- Pour développer : `python outils/serveur_local.py` puis http://localhost:5330/ (sans cache).
 
 ## Comment ça marche
 
@@ -61,3 +68,4 @@ si les fichiers de `ressources/ouvertures-tsv/` changent.
 - [chessground](https://github.com/lichess-org/chessground) 9.2.1 (GPL-3.0),
   [chess.js](https://github.com/jhlywa/chess.js) 1.4.0 (BSD-2-Clause).
 - Base d'ouvertures [lichess-org/chess-openings](https://github.com/lichess-org/chess-openings) (CC0).
+- Police [Outfit](https://github.com/Outfitio/Outfit-Fonts) (SIL Open Font License 1.1, `polices/OFL.txt`).
