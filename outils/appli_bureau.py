@@ -77,15 +77,82 @@ def ouvrir_fenetre():
     ])
 
 
+# --- Fenêtre toujours visible --------------------------------------------------------
+# Edge retient la dernière position de la fenêtre : si elle était sur un 2e écran éteint ou
+# débranché, l'appli « ne s'ouvre pas » (elle est hors de vue). On la ramène donc sur
+# l'écran principal et au premier plan.
+
+TITRE = "Analyseur d'échecs"
+
+
+def ramener_fenetre(delai=20):
+    """Attend la fenêtre (titre de la page) puis la place sur l'écran principal, au premier plan."""
+    if sys.platform != "win32":
+        return
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.windll.user32
+    try:
+        user32.SetProcessDPIAware()          # coordonnées réelles, quelle que soit la mise à l'échelle
+    except Exception:
+        pass
+    rappel_t = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+
+    def fenetres():
+        trouvees = []
+
+        def rappel(h, _):
+            if user32.IsWindowVisible(h):
+                n = user32.GetWindowTextLengthW(h)
+                tampon = ctypes.create_unicode_buffer(n + 1)
+                user32.GetWindowTextW(h, tampon, n + 1)
+                if tampon.value == TITRE:   # titre exact : les fenêtres Edge normales finissent par « - Microsoft Edge »
+                    trouvees.append(h)
+            return True
+
+        user32.EnumWindows(rappel_t(rappel), 0)
+        return trouvees
+
+    fin = time.time() + delai
+    while time.time() < fin:
+        trouvees = fenetres()
+        if trouvees:
+            break
+        time.sleep(0.3)
+    else:
+        return
+
+    MONITOR_DEFAULTTONULL, MONITOR_DEFAULTTOPRIMARY = 0, 1
+    principal = user32.MonitorFromPoint(wintypes.POINT(0, 0), MONITOR_DEFAULTTOPRIMARY)
+    zone = wintypes.RECT()
+    user32.SystemParametersInfoW(0x0030, 0, ctypes.byref(zone), 0)  # SPI_GETWORKAREA : écran principal
+    largeur_zone, hauteur_zone = zone.right - zone.left, zone.bottom - zone.top
+    for h in trouvees:
+        if user32.MonitorFromWindow(h, MONITOR_DEFAULTTONULL) != principal:
+            etait_agrandie = bool(user32.IsZoomed(h))
+            user32.ShowWindow(h, 9)          # SW_RESTORE
+            largeur, hauteur = min(1300, largeur_zone - 40), min(880, hauteur_zone - 40)
+            user32.SetWindowPos(h, None, zone.left + (largeur_zone - largeur) // 2,
+                                zone.top + (hauteur_zone - hauteur) // 2, largeur, hauteur, 0x0044)
+            if etait_agrandie:
+                user32.ShowWindow(h, 3)      # SW_MAXIMIZE, sur l'écran principal cette fois
+        elif user32.IsIconic(h):
+            user32.ShowWindow(h, 9)
+    user32.SetForegroundWindow(trouvees[-1])
+
+
 def main():
     if deja_lance():                         # 2e lancement : on rouvre juste une fenêtre
         ouvrir_fenetre()
+        ramener_fenetre()
         return
 
     serveur = ThreadingHTTPServer(("127.0.0.1", PORT), partial(Gestionnaire, directory=str(RACINE)))
     threading.Thread(target=serveur.serve_forever, daemon=True).start()
 
     fenetre = ouvrir_fenetre()
+    threading.Thread(target=ramener_fenetre, daemon=True).start()
     if fenetre is None:                      # navigateur par défaut : on ne sait pas quand il ferme
         while True:
             time.sleep(3600)

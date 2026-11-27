@@ -39,8 +39,15 @@ Write-Host "Construit : $racine\dist\AnalyseurEchecs.exe"
 if ($Installer) {
     $dossier = Join-Path $env:LOCALAPPDATA "Programs\AnalyseurEchecs"
     New-Item -ItemType Directory -Force $dossier | Out-Null
-    Copy-Item -Force "dist\AnalyseurEchecs.exe" $dossier
     $exe = Join-Path $dossier "AnalyseurEchecs.exe"
+    # Si l'appli est ouverte, Windows interdit d'écraser le .exe mais permet de le renommer :
+    # l'ancien est mis de côté et le nouveau servira au prochain lancement.
+    $ancien = Join-Path $dossier "AnalyseurEchecs.ancien.exe"
+    Remove-Item -Force $ancien -ErrorAction SilentlyContinue
+    if (Test-Path $exe) {
+        try { Remove-Item -Force $exe -ErrorAction Stop } catch { Rename-Item $exe $ancien }
+    }
+    Copy-Item -Force "dist\AnalyseurEchecs.exe" $dossier
     $shell = New-Object -ComObject WScript.Shell
     $menu = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
     foreach ($lien in (Join-Path ([Environment]::GetFolderPath("Desktop")) "Analyseur d'échecs.lnk"), (Join-Path $menu "Analyseur d'échecs.lnk")) {
